@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Auth;
 
-namespace App\Http\Controllers\Auth;
-
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
@@ -15,6 +13,7 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Models\Company;
+use App\Models\Department; // Certifique-se de importar o modelo Department
 
 class RegisteredUserController extends Controller
 {
@@ -57,11 +56,19 @@ class RegisteredUserController extends Controller
             $existingCompany = Company::create(['name' => $request->company]);
         }
 
+        // Criar o departamento para o admin
+        $department = Department::create([
+            'name' => 'Gestor de Sistemas',
+            'company_id' => $existingCompany->id,
+            'email' => $request->email, // Atribuir o email do admin ao departamento
+        ]);
+
         // Criar o usuário
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'company_id' => $existingCompany->id,
+            'department_id' => $department->id, // Atribuir o departamento ao usuário
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'role' => 'admin', // Atribuir 'admin' ao primeiro usuário
@@ -77,4 +84,3 @@ class RegisteredUserController extends Controller
         return redirect(route('dashboard', [], false));
     }
 }
-

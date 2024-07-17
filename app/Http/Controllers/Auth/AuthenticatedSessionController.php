@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
-
 use App\Models\Company;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -29,7 +28,7 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
-     /**
+    /**
      * Handle an incoming authentication request.
      */
     public function store(LoginRequest $request): RedirectResponse
@@ -50,26 +49,21 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        // Verificar se o usuário existe
-        $user = User::where('email', $request->email)->first();
+        // Verificar se o usuário existe e pertence à empresa
+        $user = User::where('email', $request->email)
+                    ->where('company_id', $company->id)
+                    ->first();
 
         if (!$user) {
             throw ValidationException::withMessages([
-                'email' => 'Usuário não encontrado.',
-            ]);
-        }
-
-        // Verificar se o usuário pertence à empresa
-        if ($user->company_id !== $company->id) {
-            throw ValidationException::withMessages([
-                'company' => 'Usuário não pertence à empresa informada.',
+                'email' => 'Usuário não encontrado ou não pertence à empresa informada.',
             ]);
         }
 
         // Verificar se a senha está correta
         if (!Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
-                'password' => 'Senha Invalida.',
+                'password' => 'Senha inválida.',
             ]);
         }
 
