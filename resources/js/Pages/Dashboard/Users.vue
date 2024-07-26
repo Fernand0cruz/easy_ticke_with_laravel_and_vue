@@ -2,16 +2,16 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
-import DangerButton from '@/Components/DangerButton.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import DangerButton from '@/Components/DangerButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Trash2, Pencil, ClipboardPlus } from 'lucide-vue-next';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { ClipboardPlus, Trash2, Pencil } from 'lucide-vue-next';
 
-// Recebe as props do servidor
 const props = defineProps({
     user: Object,
+    users: Array,
     departments: Array
 });
 
@@ -19,23 +19,30 @@ const form = useForm({
     name: '',
     email: '',
     phone: '',
-    status: "active"
+    department_id: '',
+    status: 'active',
+    role: 'user',
+    password: '',
+    password_confirmation: '',
 });
 
 const isEditing = ref(false);
-const editDepartmentId = ref(null);
+const editUserId = ref(null);
 
-const startEditDepartment = (department) => {
-    form.name = department.name;
-    form.email = department.email;
-    form.phone = department.phone;
-    editDepartmentId.value = department.id;
+const startEditUser = (user) => {
+    form.name = user.name;
+    form.email = user.email;
+    form.phone = user.phone;
+    form.department_id = user.department_id;
+    form.status = user.status;
+    form.role = user.role;
+    editUserId.value = user.id;
     isEditing.value = true;
-};
+}
 
 const submit = () => {
     if (isEditing.value) {
-        form.patch(route('departments.update', editDepartmentId.value), {
+        form.patch(route('users.update', editUserId.value), {
             onFinish: () => {
                 if (Object.keys(form.errors).length === 0) {
                     window.location.reload();
@@ -43,7 +50,7 @@ const submit = () => {
             },
         });
     } else {
-        form.post(route('departments.store'), {
+        form.post(route('users.store'), {
             onFinish: () => {
                 if (Object.keys(form.errors).length === 0) {
                     window.location.reload();
@@ -51,18 +58,16 @@ const submit = () => {
             },
         });
     }
+
 };
 
-
-// Método para excluir departamento
-const deleteDepartment = (id) => {
-    form.delete(route('departments.destroy', id), {
+const deleteUser = (id) => {
+    form.delete(route('users.destroy', id), {
         onFinish: () => {
-            // Remove o departamento da lista localmente
-            props.departments = props.departments.filter(department => department.id !== id);
-        },
-    });
-};
+            props.users = props.users.filter(user => user.id !== id)
+        }
+    })
+}
 
 
 // Função para aplicar a máscara de telefone com traço após os primeiros 5 dígitos
@@ -90,24 +95,25 @@ const applyPhoneMask = (value) => {
 const formatPhone = () => {
     form.phone = applyPhoneMask(form.phone);
 };
+
 </script>
 
 <template>
 
-    <Head title="Departamentos" />
+    <Head title="Usuários" />
 
     <AuthenticatedLayout>
         <div class="max-w-screen-xl m-auto p-5 flex flex-col gap-5">
 
-            <div class="rounded-md shadow-sm border px-5 py-10 text-center bg-white">Departamentos</div>
+            <div class="rounded-md shadow-sm border px-5 py-10 text-center bg-white">Usuários</div>
 
             <div class="rounded-md shadow-sm border p-5 flex flex-col gap-5 bg-white">
 
-                <h1>{{ isEditing ? 'Editar Departamento' : 'Criar Departamento' }}</h1>
+                <h1>{{ isEditing ? 'Editar Usuário' : 'Criar Usuário' }}</h1>
 
                 <form @submit.prevent="submit">
                     <div>
-                        <InputLabel for="name" value="Nome do departamento" />
+                        <InputLabel for="name" value="Nome do usuário" />
                         <TextInput id="name" type="text" class="mt-1 block w-full" v-model="form.name" required
                             autofocus autocomplete="off" />
                         <InputError class="mt-2" :message="form.errors.name" />
@@ -127,28 +133,71 @@ const formatPhone = () => {
                         <InputError class="mt-2" :message="form.errors.phone" />
                     </div>
 
+                    <div class="mt-4">
+                        <InputLabel for="department_id" value="Departamento" />
+                        <select id="department_id"
+                            class="mt-1 block w-full border-gray-300 focus:border-[#5d5fb0] focus:ring-[#8789FE] rounded-md shadow-sm"
+                            v-model="form.department_id" required>
+                            <option v-for="department in departments" :key="department.id" :value="department.id">
+                                {{ department.name }}
+                            </option>
+
+                        </select>
+                        <InputError class="mt-2" :message="form.errors.department" />
+                    </div>
+
                     <div class="mt-4" v-if="isEditing">
                         <InputLabel for="status" value="Status" />
-                        <select id="status" class="mt-1 block w-full border-gray-300 focus:border-[#5d5fb0] focus:ring-[#8789FE] rounded-md shadow-sm" v-model="form.status" required>
+                        <select id="status"
+                            class="mt-1 block w-full border-gray-300 focus:border-[#5d5fb0] focus:ring-[#8789FE] rounded-md shadow-sm"
+                            v-model="form.status" required>
                             <option value="active">Ativo</option>
                             <option value="inactive">Inativo</option>
                         </select>
                         <InputError class="mt-2" :message="form.errors.status" />
                     </div>
 
+                    <div class="mt-4" v-if="isEditing">
+                        <InputLabel for="role" value="Role" />
+                        <select id="role"
+                            class="mt-1 block w-full border-gray-300 focus:border-[#5d5fb0] focus:ring-[#8789FE] rounded-md shadow-sm"
+                            v-model="form.role" required>
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <InputError class="mt-2" :message="form.errors.role" />
+                    </div>
+
+                    <h1 class="text-red-600 mt-4">{{ isEditing ? 'Só é necessario inserir a senha se for mudar a mesma!'
+                        : '' }}</h1>
+
+                    <div class="mt-4">
+                        <InputLabel for="password" value="Senha" />
+                        <TextInput id="password" type="password" class="mt-1 block w-full" v-model="form.password"
+                            autocomplete="off" />
+                        <InputError class="mt-2" :message="form.errors.password" />
+                    </div>
+
+                    <div class="mt-4">
+                        <InputLabel for="password_confirmation" value="Confirmar Senha" />
+                        <TextInput id="password_confirmation" type="password" class="mt-1 block w-full"
+                            v-model="form.password_confirmation" autocomplete="off" />
+                        <InputError class="mt-2" :message="form.errors.password_confirmation" />
+                    </div>
+
                     <div class="flex items-center justify-end mt-4">
                         <PrimaryButton class="ms-4 flex gap-2" :class="{ 'opacity-25': form.processing }"
                             :disabled="form.processing">
                             <ClipboardPlus />
-                            {{ isEditing ? 'Atualizar Departamento' : 'Cadastrar Departamento' }}
+                            {{ isEditing ? 'Atualizar Usuário' : 'Cadastrar Usuário' }}
                         </PrimaryButton>
                     </div>
                 </form>
             </div>
 
-            <!-- Listagem dos departamentos em uma tabela  -->
+            <!-- Listagem dos usuários em uma tabela  -->
             <div class="rounded-md shadow-sm border p-5 flex flex-col gap-5 bg-white">
-                <h1>Lista de Departamentos</h1>
+                <h1>Lista de Usuários</h1>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -164,6 +213,9 @@ const formatPhone = () => {
                                     Telefone</th>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Departamento</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status</th>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -174,18 +226,20 @@ const formatPhone = () => {
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-for="department in departments" :key="department.id">
-                                <td class="px-6 py-4 whitespace-nowrap">{{ department.name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ department.email }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ department.phone }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ department.status }}</td>
+                            <tr v-for="user in users" :key="user.id">
+                                <td class="px-6 py-4 whitespace-nowrap">{{ user.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ user.email }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ user.phone }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ user.department ? user.department.name :
+                                    'N/A' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ user.status }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <DangerButton class="flex gap-2" @click="deleteDepartment(department.id)">
+                                    <DangerButton class="flex gap-2" @click="deleteUser(user.id)">
                                         <Trash2 />Excluir
                                     </DangerButton>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <PrimaryButton class="flex gap-2" @click="startEditDepartment(department)">
+                                    <PrimaryButton class="flex gap-2" @click="startEditUser(user)">
                                         <Pencil />Editar
                                     </PrimaryButton>
                                 </td>

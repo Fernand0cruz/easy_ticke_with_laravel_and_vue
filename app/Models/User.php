@@ -19,12 +19,12 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'password',
         'phone', // Adicionado campo telefone
-        'role',  // Adicionado campo role
         'status', // Adicionado campo status
+        'role',  // Adicionado campo role
         'company_id', // Chave estrangeira para Company
         'department_id', // Chave estrangeira para Department
+        'password',
     ];
 
     /**

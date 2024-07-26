@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,6 +12,7 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
         body {
             font-family: 'Poppins', sans-serif;
             font-weight: 400;
@@ -23,7 +25,9 @@
     @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
     @inertiaHead
 </head>
-<body class="flex flex-col h-screen">
+
+<body class="flex flex-col h-screen bg-gray-100">
     @inertia
 </body>
+
 </html>

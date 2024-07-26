@@ -19,7 +19,7 @@ const props = defineProps({
     <Head title="Home" />
 
     <!-- Barra de navegação -->
-    <nav v-if="canLogin" class="border shadow-sm p-5">
+    <nav v-if="canLogin" class="border shadow-sm p-5 bg-white">
         <div class="max-w-screen-xl m-auto flex justify-between items-center">
             <div class="w-[150px]">
                 <Link href="/">
@@ -48,7 +48,7 @@ const props = defineProps({
         </div>
     </main>
     <!-- Rodapé -->
-    <footer class="border shadow-sm p-5">
+    <footer class="border shadow-sm p-5 bg-white">
         <div class="max-w-screen-xl m-auto">
             <h1>Copyright (C) 2024
                 <Link href="https://github.com/Fernand0cruz" className="font-bold">Fernand0W</Link>

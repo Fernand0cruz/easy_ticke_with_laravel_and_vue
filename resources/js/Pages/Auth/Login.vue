@@ -43,7 +43,8 @@ const submit = () => {
             <div>
                 <InputLabel for="company" value="Empresa" />
 
-                <TextInput id="company" type="text" class="mt-1 block w-full" v-model="form.company" required autofocus autocomplete="off" />
+                <TextInput id="company" type="text" class="mt-1 block w-full" v-model="form.company" required autofocus
+                    autocomplete="off" />
 
                 <InputError class="mt-2" :message="form.errors.company" />
             </div>
@@ -51,7 +52,8 @@ const submit = () => {
             <div class="mt-4">
                 <InputLabel for="email" value="Email" />
 
-                <TextInput id="email" type="email" class="mt-1 block w-full" v-model="form.email" required autocomplete="off" />
+                <TextInput id="email" type="email" class="mt-1 block w-full" v-model="form.email" required
+                    autocomplete="off" />
 
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
@@ -59,7 +61,8 @@ const submit = () => {
             <div class="mt-4">
                 <InputLabel for="password" value="Senha" />
 
-                <TextInput id="password" type="password" class="mt-1 block w-full" v-model="form.password" required autocomplete="off" />
+                <TextInput id="password" type="password" class="mt-1 block w-full" v-model="form.password" required
+                    autocomplete="off" />
 
                 <InputError class="mt-2" :message="form.errors.password" />
             </div>

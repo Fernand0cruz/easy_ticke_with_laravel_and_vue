@@ -19,74 +19,84 @@ class AuthenticatedSessionController extends Controller
 {
     /**
      * Display the login view.
+     *
+     * @return Response
      */
     public function create(): Response
     {
+       
         return Inertia::render('Auth/Login', [
-            'canResetPassword' => Route::has('password.request'),
-            'status' => session('status'),
+            'canResetPassword' => Route::has('password.request'), 
         ]);
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
     public function store(LoginRequest $request): RedirectResponse
     {
-        // Validar os campos de entrada
+        // Valida os dados de entrada do usuário. 
         $request->validate([
-            'email' => ['required', 'string', 'email'],
+            'company' => ['required', 'string'], 
+            'email' => ['required', 'string', 'email'], 
             'password' => ['required', 'string'],
-            'company' => ['required', 'string'],
         ]);
 
-        // Verificar se a empresa existe
+        // Busca a empresa pelo nome fornecido no request.
         $company = Company::where('name', $request->company)->first();
 
+        // Se a empresa não for encontrada, lança uma exceção de validação com uma mensagem de erro.
         if (!$company) {
             throw ValidationException::withMessages([
                 'company' => 'Empresa não encontrada.',
             ]);
         }
 
-        // Verificar se o usuário existe e pertence à empresa
+        // Busca o usuário pelo email fornecido e verifica se ele pertence à empresa encontrada.
         $user = User::where('email', $request->email)
                     ->where('company_id', $company->id)
                     ->first();
 
+        // Se o usuário não for encontrado, lança uma exceção de validação com uma mensagem de erro.
         if (!$user) {
             throw ValidationException::withMessages([
-                'email' => 'Usuário não encontrado ou não pertence à empresa informada.',
+                'email' => 'Usuário não encontrado na empresa informada.',
             ]);
         }
 
-        // Verificar se a senha está correta
+        // Verifica se a senha fornecida corresponde à senha do usuário usando o Hash.
+        // Lança uma exceção de validação com uma mensagem de erro se a senha for inválida.
         if (!Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'password' => 'Senha inválida.',
             ]);
         }
 
-        // Realizar o login do usuário
+        // Se todas as validações passarem, realiza o login do usuário.
         Auth::login($user);
 
-        // Regenerar a sessão
+        // Regenera a sessão para garantir que não haja dados antigos da sessão.
         $request->session()->regenerate();
 
+        // Redireciona o usuário para a página de dashboard ou para a página que o usuário estava tentando acessar antes do login.
         return redirect()->intended(route('dashboard'));
     }
 
     /**
      * Destroy an authenticated session.
+     *
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // Faz o logout do usuário autenticado.
         Auth::guard('web')->logout();
 
+        // Invalida a sessão atual para garantir que todos os dados da sessão sejam removidos.
         $request->session()->invalidate();
 
+        // Regenera o token da sessão para prevenir ataques CSRF.
         $request->session()->regenerateToken();
 
+        // Redireciona o usuário para a página inicial.
         return redirect('/');
     }
 }

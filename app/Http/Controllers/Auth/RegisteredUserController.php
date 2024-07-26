@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Company;
+use App\Models\Department;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,8 +14,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Models\Company;
-use App\Models\Department; // Certifique-se de importar o modelo Department
 
 class RegisteredUserController extends Controller
 {
@@ -22,6 +22,7 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
+        // Renderiza a view de registro usando Inertia.js.
         return Inertia::render('Auth/Register');
     }
 
@@ -32,6 +33,7 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Validação dos dados do formulário de registro.
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255'],
@@ -40,47 +42,53 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Verificar se a empresa já existe
+        // Verifica se a empresa fornecida já existe no banco de dados.
         $existingCompany = Company::where('name', $request->company)->first();
 
-        // Se a empresa existir, verificar se já tem um admin registrado
+        // Se a empresa já existe, verifica se já há um administrador registrado para ela.
         if ($existingCompany) {
-            $existingAdmin = $existingCompany->users()->first();
+            $existingAdmin = $existingCompany->users()->where('role', 'admin')->first();
             if ($existingAdmin) {
+                // Se já houver um administrador registrado, retorna um erro e os dados inseridos.
                 return redirect()->back()->withErrors([
                     'company' => 'Já existe um administrador registrado nesta empresa.',
-                ])->withInput(); // Retornar com os dados de entrada
+                ])->withInput();
             }
         } else {
-            // Se a empresa não existir, criar
-            $existingCompany = Company::create(['name' => $request->company]);
+            // Se a empresa não existe, cria uma nova empresa com os dados fornecidos.
+            $existingCompany = Company::create([
+                'name' => $request->company,
+                'phone' => $request->phone, 
+                'status' => 'active', // Define o status da empresa como ativo.
+            ]);
         }
 
-        // Criar o departamento para o admin
+        // Cria um novo departamento para o administrador na empresa existente.
         $department = Department::create([
             'name' => 'Gestor de Sistemas',
-            'company_id' => $existingCompany->id,
-            'email' => $request->email, // Atribuir o email do admin ao departamento
+            'company_id' => $existingCompany->id, // Associa o departamento à empresa criada ou existente.
+            'email' => $request->email, // Atribui o email do administrador ao departamento.
         ]);
 
-        // Criar o usuário
+        // Cria o usuário com os dados fornecidos.
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'company_id' => $existingCompany->id,
-            'department_id' => $department->id, // Atribuir o departamento ao usuário
-            'phone' => $request->phone,
-            'password' => Hash::make($request->password),
-            'role' => 'admin', // Atribuir 'admin' ao primeiro usuário
-            'status' => 'active', // Defina o status conforme necessário
+            'name' => $request->name, 
+            'email' => $request->email, 
+            'company_id' => $existingCompany->id, // Associa o usuário à empresa.
+            'department_id' => $department->id, // Associa o usuário ao departamento criado.
+            'phone' => $request->phone, 
+            'password' => Hash::make($request->password), // Criptografa a senha do usuário.
+            'role' => 'admin', // Define o papel do usuário como administrador.
+            'status' => 'active', // Define o status do usuário como ativo.
         ]);
 
-        // Disparar o evento Registered
+        // Dispara o evento Registered para indicar que um novo usuário foi registrado.
         event(new Registered($user));
 
-        // Logar o usuário
+        // Faz o login do usuário recém-criado.
         Auth::login($user);
 
+        // Redireciona o usuário para a rota 'dashboard'.
         return redirect(route('dashboard', [], false));
     }
 }

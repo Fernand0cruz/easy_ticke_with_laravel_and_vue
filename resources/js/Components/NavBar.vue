@@ -26,7 +26,7 @@ const leave = (el, done) => {
 </script>
 
 <template>
-    <nav class="border shadow-sm rounded-md">
+    <nav class="border shadow-sm rounded-md bg-white">
         <div class="flex justify-between items-center max-w-screen-xl m-auto px-5 py-3">
             <div class="flex items-center gap-5">
                 <button @click="toggleMenu" class="flex gap-2 border p-2 shadow-sm rounded-md">
@@ -56,7 +56,7 @@ const leave = (el, done) => {
 
                 <ul>
                     <li>
-                        <Link href="#" class="py-2 flex gap-2 items-center">
+                        <Link href="/dashboard" class="py-2 flex gap-2 items-center">
                         <House />Página inicial
                         </Link>
                     </li>
@@ -66,18 +66,23 @@ const leave = (el, done) => {
                         </Link>
                     </li>
                     <li>
-                        <Link href="#" class="py-2 flex gap-2 items-center">
+                        <Link :href="route('users.index')" class="py-2 flex gap-2 items-center">
                         <UserRoundCheck />Usuários
                         </Link>
                     </li>
                     <li>
-                        <Link href="#" class="py-2 flex gap-2 items-center">
+                        <Link :href="route('departments.index')" class="py-2 flex gap-2 items-center">
                         <ListCheck />Departamentos
                         </Link>
                     </li>
                     <li>
                         <Link href="#" class="py-2 flex gap-2 items-center">
                         <Ticket />Todos os chamados
+                        </Link>
+                    </li>
+                    <li>
+                        <Link :href="route('createTicket.index')" class="py-2 flex gap-2 items-center">
+                        <Ticket />Criar Chamado
                         </Link>
                     </li>
                     <li>
@@ -110,7 +115,7 @@ const leave = (el, done) => {
 
 
                     <Link :href="route('logout')" method="post">
-                        Sair
+                    Sair
                     </Link>
 
 

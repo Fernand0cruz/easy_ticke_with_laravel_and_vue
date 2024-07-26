@@ -17,11 +17,11 @@ return new class extends Migration
             $table->string('email');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('phone')->nullable(); // Campo telefone opcional
+            $table->string('phone');
             $table->enum('role', ['admin', 'user'])->default('user'); // Campo role com valor padrão 'user'
             $table->enum('status', ['active', 'inactive'])->default('active'); // Status com valores ativos e inativos
             $table->foreignId('company_id')->constrained()->onDelete('cascade'); // Chave estrangeira para Company
-            $table->foreignId('department_id')->nullable()->constrained()->onDelete('cascade');// Chave estrangeira para Department
+            $table->foreignId('department_id')->constrained()->onDelete('cascade');// Chave estrangeira para Department
             $table->rememberToken();
             $table->timestamps();
         });

@@ -51,21 +51,15 @@ const formatPhone = () => {
 
 <template>
     <GuestLayout>
+
         <Head title="Registrar" />
 
         <form @submit.prevent="submit">
             <div>
                 <InputLabel for="name" value="Nome" />
 
-                <TextInput
-                    id="name"
-                    type="text"
-                    class="mt-1 block w-full"
-                    v-model="form.name"
-                    required
-                    autofocus
-                    autocomplete="off"
-                />
+                <TextInput id="name" type="text" class="mt-1 block w-full" v-model="form.name" required autofocus
+                    autocomplete="off" />
 
                 <InputError class="mt-2" :message="form.errors.name" />
             </div>
@@ -73,14 +67,8 @@ const formatPhone = () => {
             <div class="mt-4">
                 <InputLabel for="email" value="Email" />
 
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autocomplete="off"
-                />
+                <TextInput id="email" type="email" class="mt-1 block w-full" v-model="form.email" required
+                    autocomplete="off" />
 
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
@@ -88,14 +76,8 @@ const formatPhone = () => {
             <div class="mt-4">
                 <InputLabel for="company" value="Empresa" />
 
-                <TextInput
-                    id="company"
-                    type="text"
-                    class="mt-1 block w-full"
-                    v-model="form.company"
-                    required
-                    autocomplete="off"
-                />
+                <TextInput id="company" type="text" class="mt-1 block w-full" v-model="form.company" required
+                    autocomplete="off" />
 
                 <InputError class="mt-2" :message="form.errors.company" />
             </div>
@@ -103,15 +85,8 @@ const formatPhone = () => {
             <div class="mt-4">
                 <InputLabel for="phone" value="Telefone" />
 
-                <TextInput
-                    id="phone"
-                    type="text"
-                    class="mt-1 block w-full"
-                    v-model="form.phone"
-                    @input="formatPhone"
-                    required
-                    autocomplete="off"
-                />
+                <TextInput id="phone" type="text" class="mt-1 block w-full" v-model="form.phone" @input="formatPhone"
+                    required autocomplete="off" />
 
                 <InputError class="mt-2" :message="form.errors.phone" />
             </div>
@@ -119,14 +94,8 @@ const formatPhone = () => {
             <div class="mt-4">
                 <InputLabel for="password" value="Senha" />
 
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="off"
-                />
+                <TextInput id="password" type="password" class="mt-1 block w-full" v-model="form.password" required
+                    autocomplete="off" />
 
                 <InputError class="mt-2" :message="form.errors.password" />
             </div>
@@ -134,24 +103,16 @@ const formatPhone = () => {
             <div class="mt-4">
                 <InputLabel for="password_confirmation" value="Confirmar Senha" />
 
-                <TextInput
-                    id="password_confirmation"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password_confirmation"
-                    required
-                    autocomplete="off"
-                />
+                <TextInput id="password_confirmation" type="password" class="mt-1 block w-full"
+                    v-model="form.password_confirmation" required autocomplete="off" />
 
                 <InputError class="mt-2" :message="form.errors.password_confirmation" />
             </div>
 
             <div class="flex items-center justify-end mt-4">
-                <Link
-                    :href="route('login')"
-                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5d5fb0]"
-                >
-                    Já tem uma conta?
+                <Link :href="route('login')"
+                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5d5fb0]">
+                Já tem uma conta?
                 </Link>
 
                 <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">

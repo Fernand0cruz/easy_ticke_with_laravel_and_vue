@@ -15,13 +15,16 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email'); // Campo email obrigatório
-            $table->string('location')->nullable(); // Campo localização opcional
             $table->string('phone')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active'); // Status com valores ativos e inativos
             $table->foreignId('company_id')->constrained()->onDelete('cascade'); // Chave estrangeira para Company
             $table->timestamps();
+
+            // Adiciona índice único para garantir que o nome do departamento seja único por empresa
+            $table->unique(['name', 'company_id']);
         });
     }
+
 
     /**
      * Reverse the migrations.

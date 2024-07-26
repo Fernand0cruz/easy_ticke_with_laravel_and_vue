@@ -12,7 +12,6 @@ class Department extends Model
     protected $fillable = [
         'name',
         'email',
-        'location', // Campo opcional
         'phone',   // Campo opcional
         'status', // Status (active/inactive)
         'company_id', // Chave estrangeira para Company
