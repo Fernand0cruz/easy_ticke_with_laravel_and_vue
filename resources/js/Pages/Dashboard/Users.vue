@@ -235,12 +235,12 @@ const formatPhone = () => {
                                 <td class="px-6 py-4 whitespace-nowrap">{{ user.status }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <DangerButton class="flex gap-2" @click="deleteUser(user.id)">
-                                        <Trash2 />Excluir
+                                        <Trash2 />
                                     </DangerButton>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <PrimaryButton class="flex gap-2" @click="startEditUser(user)">
-                                        <Pencil />Editar
+                                        <Pencil />
                                     </PrimaryButton>
                                 </td>
                             </tr>

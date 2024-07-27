@@ -181,12 +181,12 @@ const formatPhone = () => {
                                 <td class="px-6 py-4 whitespace-nowrap">{{ department.status }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <DangerButton class="flex gap-2" @click="deleteDepartment(department.id)">
-                                        <Trash2 />Excluir
+                                        <Trash2 />
                                     </DangerButton>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <PrimaryButton class="flex gap-2" @click="startEditDepartment(department)">
-                                        <Pencil />Editar
+                                        <Pencil />
                                     </PrimaryButton>
                                 </td>
                             </tr>

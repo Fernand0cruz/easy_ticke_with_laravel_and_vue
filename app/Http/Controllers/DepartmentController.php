@@ -13,6 +13,7 @@ class DepartmentController extends Controller
     {
         // Obtém o usuário autenticado
         $user = auth()->user();
+        // dd($user);
         $departments = [];
 
         // Verifica se o usuário está autenticado e possui uma empresa associada

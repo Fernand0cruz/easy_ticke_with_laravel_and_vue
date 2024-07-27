@@ -18,36 +18,30 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
 
-    // Rota para exibir a lista de departamentos    
-    Route::get('/dashboard/departments', [DepartmentController::class, 'index'])->middleware(['auth', 'verified'])->name('departments.index');
-    // Rota para criar departamento
-    Route::post('/dashboard/departments', [DepartmentController::class, 'store'])->middleware(['auth', 'verified'])->name('departments.store');
-    // Rota para excluir departamento
-    Route::delete('/dashboard/departments/{department}', [DepartmentController::class, 'destroy'])->middleware(['auth', 'verified'])->name('departments.destroy');
-    // Rota para atualizar departamento
-    Route::patch('/dashboard/departments/{department}', [DepartmentController::class, 'update'])->middleware(['auth', 'verified'])->name('departments.update');
+    Route::prefix('dashboard')->group(function () {
+        // Routes for Departments
+        Route::resource('departments', DepartmentController::class)->except(['create', 'edit', 'show']);
 
-    // Rota para exibir a lista de usuários
-    Route::get('/dashboard/users', [UserController::class, 'index'])->middleware(['auth', 'verified'])->name('users.index');
-    // Rota para criar usuário
-    Route::post('/dashboard/users', [UserController::class, 'store'])->middleware(['auth', 'verified'])->name('users.store');
-    // Rota para excluir usuário
-    Route::delete('/dashboard/users/{user}', [UserController::class, 'destroy'])->middleware(['auth', 'verified'])->name('users.destroy');
-    // Rota para atualizar usuário
-    Route::patch('/dashboard/users/{user}', [UserController::class, 'update'])->middleware(['auth', 'verified'])->name('users.update');
+        // Routes for Users
+        Route::resource('users', UserController::class)->except(['create', 'edit', 'show']);
 
-    // Rota para exibir form de criação de chamado
-    Route::get('/dashboard/createticket', [TicketController::class, 'index'])->middleware(['auth', 'verified'])->name('createTicket.index');
-    // Rota para criar chamado
-    Route::post('/dashboard/createticket', [TicketController::class, 'store'])->middleware(['auth', 'verified'])->name('createTicket.store');
-
+        // Routes for Tickets
+        Route::get('/createticket', [TicketController::class, 'index'])->name('createTicket.index');
+        Route::post('/createticket', [TicketController::class, 'store'])->name('createTicket.store');
+        Route::get('/alltickets', [TicketController::class, 'showAll'])->name('allTickets.show');
+        Route::get('/tickets', [TicketController::class, 'showByDepartment'])->name('tickets.show');
+        Route::get('/mytickets', [TicketController::class, 'showOpendByMe'])->name('myTickets.show');
+        Route::get('/ticket/{id}', [TicketController::class, 'showTicket'])->name('ticket.show');
+    });
 });
 
 require __DIR__.'/auth.php';

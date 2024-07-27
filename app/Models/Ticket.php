@@ -10,6 +10,7 @@ class Ticket extends Model
     use HasFactory;
 
     protected $fillable = [
+        'opened_by_department_id',
         'department_id',
         'user_id',
         'title',
@@ -26,5 +27,10 @@ class Ticket extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function openedByDepartment()
+    {
+        return $this->belongsTo(Department::class, 'opened_by_department_id');
     }
 }

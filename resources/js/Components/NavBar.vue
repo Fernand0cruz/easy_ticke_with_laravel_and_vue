@@ -76,7 +76,7 @@ const leave = (el, done) => {
                         </Link>
                     </li>
                     <li>
-                        <Link href="#" class="py-2 flex gap-2 items-center">
+                        <Link :href="route('allTickets.show')" class="py-2 flex gap-2 items-center">
                         <Ticket />Todos os chamados
                         </Link>
                     </li>
@@ -86,12 +86,12 @@ const leave = (el, done) => {
                         </Link>
                     </li>
                     <li>
-                        <Link href="#" class="py-2 flex gap-2 items-center">
+                        <Link :href="route('tickets.show')" class="py-2 flex gap-2 items-center">
                         <Ticket />Chamados
                         </Link>
                     </li>
                     <li>
-                        <Link href="#" class="py-2 flex gap-2 items-center">
+                        <Link :href="route('myTickets.show')" class="py-2 flex gap-2 items-center">
                         <TicketCheck />Meus Chamados
                         </Link>
                     </li>

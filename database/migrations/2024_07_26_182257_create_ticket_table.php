@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('tickets', function (Blueprint $table) {
             $table->id(); // ID do chamado
+            $table->foreignId('opened_by_department_id')->constrained('departments')->onDelete('cascade'); // Departamento que está abrindo o chamado
             $table->foreignId('department_id')->constrained()->onDelete('cascade'); // Chave estrangeira para a tabela departments
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Chave estrangeira para a tabela users
             $table->string('title'); // Título do chamado
