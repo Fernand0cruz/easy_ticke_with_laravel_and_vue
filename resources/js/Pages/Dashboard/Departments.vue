@@ -11,50 +11,61 @@ import { ref } from 'vue';
 
 // Recebe as props do servidor
 const props = defineProps({
-    user: Object,
-    departments: Array
+    departments: Array // Array de departamentos
 });
 
+// Inicializa o formulário usando useForm do Inertia
 const form = useForm({
-    name: '',
-    email: '',
-    phone: '',
-    status: "active"
+    name: '', // Nome do departamento
+    email: '', // Email do departamento
+    phone: '', // Telefone do departamento
+    status: "active" // Status do departamento (ativo por padrão)
 });
 
-const isEditing = ref(false);
-const editDepartmentId = ref(null);
+// Variáveis reativas para controle de edição
+const isEditing = ref(false); // Controle para saber se estamos editando um departamento
+const editDepartmentId = ref(null); // Armazena o ID do departamento que está sendo editado
 
+// Função para iniciar a edição de um departamento
 const startEditDepartment = (department) => {
+    // Verifica se o telefone é nulo e inicializa como string vazia
+    if (department.phone === null) {
+        department.phone = '';
+    }
+
+    // Preenche o formulário com os dados do departamento selecionado
     form.name = department.name;
     form.email = department.email;
     form.phone = department.phone;
-    editDepartmentId.value = department.id;
-    isEditing.value = true;
+    editDepartmentId.value = department.id; // Define o ID do departamento a ser editado
+    isEditing.value = true; // Define que estamos em modo de edição
 };
 
+// Função para submeter o formulário
 const submit = () => {
+    // Verifica se estamos editando ou criando um departamento
     if (isEditing.value) {
+        // Atualiza o departamento
         form.patch(route('departments.update', editDepartmentId.value), {
             onFinish: () => {
-                if (Object.keys(form.errors).length === 0) {
-                    window.location.reload();
+                if (Object.keys(form.errors).length === 0) { // Se não houver erros
+                    window.location.reload(); // Recarrega a página
                 }
             },
         });
     } else {
+        // Cria um novo departamento
         form.post(route('departments.store'), {
             onFinish: () => {
-                if (Object.keys(form.errors).length === 0) {
-                    window.location.reload();
+                if (Object.keys(form.errors).length === 0) { // Se não houver erros
+                    window.location.reload(); // Recarrega a página
                 }
             },
         });
     }
 };
 
-
-// Método para excluir departamento
+// Método para excluir um departamento
 const deleteDepartment = (id) => {
     form.delete(route('departments.destroy', id), {
         onFinish: () => {
@@ -63,7 +74,6 @@ const deleteDepartment = (id) => {
         },
     });
 };
-
 
 // Função para aplicar a máscara de telefone com traço após os primeiros 5 dígitos
 const applyPhoneMask = (value) => {
@@ -83,50 +93,38 @@ const applyPhoneMask = (value) => {
     // Limita o número máximo de dígitos para 14 (incluindo parênteses e traço)
     numericValue = numericValue.slice(0, 14);
 
-    return numericValue;
+    return numericValue; // Retorna o valor formatado
 };
 
 // Método para formatar o telefone enquanto o usuário digita
 const formatPhone = () => {
-    form.phone = applyPhoneMask(form.phone);
+    form.phone = applyPhoneMask(form.phone); // Aplica a máscara ao telefone
 };
 </script>
 
 <template>
-
     <Head title="Departamentos" />
-
     <AuthenticatedLayout>
         <div class="max-w-screen-xl m-auto p-5 flex flex-col gap-5">
-
             <div class="rounded-md shadow-sm border px-5 py-10 text-center bg-white">Departamentos</div>
-
             <div class="rounded-md shadow-sm border p-5 flex flex-col gap-5 bg-white">
-
                 <h1>{{ isEditing ? 'Editar Departamento' : 'Criar Departamento' }}</h1>
-
                 <form @submit.prevent="submit">
                     <div>
                         <InputLabel for="name" value="Nome do departamento" />
-                        <TextInput id="name" type="text" class="mt-1 block w-full" v-model="form.name" required
-                            autofocus autocomplete="off" />
+                        <TextInput id="name" type="text" class="mt-1 block w-full" v-model="form.name" required autofocus autocomplete="off" />
                         <InputError class="mt-2" :message="form.errors.name" />
                     </div>
-
                     <div class="mt-4">
                         <InputLabel for="email" value="Email" />
-                        <TextInput id="email" type="email" class="mt-1 block w-full" v-model="form.email" required
-                            autocomplete="off" />
+                        <TextInput id="email" type="email" class="mt-1 block w-full" v-model="form.email" required autocomplete="off" />
                         <InputError class="mt-2" :message="form.errors.email" />
                     </div>
-
                     <div class="mt-4">
                         <InputLabel for="phone" value="Telefone" />
-                        <TextInput id="phone" type="text" class="mt-1 block w-full" v-model="form.phone"
-                            @input="formatPhone" autocomplete="off" />
+                        <TextInput id="phone" type="text" class="mt-1 block w-full" v-model="form.phone" @input="formatPhone" autocomplete="off" />
                         <InputError class="mt-2" :message="form.errors.phone" />
                     </div>
-
                     <div class="mt-4" v-if="isEditing">
                         <InputLabel for="status" value="Status" />
                         <select id="status" class="mt-1 block w-full border-gray-300 focus:border-[#5d5fb0] focus:ring-[#8789FE] rounded-md shadow-sm" v-model="form.status" required>
@@ -135,42 +133,26 @@ const formatPhone = () => {
                         </select>
                         <InputError class="mt-2" :message="form.errors.status" />
                     </div>
-
                     <div class="flex items-center justify-end mt-4">
-                        <PrimaryButton class="ms-4 flex gap-2" :class="{ 'opacity-25': form.processing }"
-                            :disabled="form.processing">
+                        <PrimaryButton class="ms-4 flex gap-2" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                             <ClipboardPlus />
                             {{ isEditing ? 'Atualizar Departamento' : 'Cadastrar Departamento' }}
                         </PrimaryButton>
                     </div>
                 </form>
             </div>
-
-            <!-- Listagem dos departamentos em uma tabela  -->
             <div class="rounded-md shadow-sm border p-5 flex flex-col gap-5 bg-white">
                 <h1>Lista de Departamentos</h1>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Nome</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Email</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Telefone</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Excluir</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Editar</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefone</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Excluir</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Editar</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">

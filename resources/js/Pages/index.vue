@@ -14,11 +14,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <!-- Componente Head para gerenciar o título da página -->
-
     <Head title="Home" />
-
-    <!-- Barra de navegação -->
     <nav v-if="canLogin" class="border shadow-sm p-5 bg-white">
         <div class="max-w-screen-xl m-auto flex justify-between items-center">
             <div class="w-[150px]">
@@ -27,18 +23,20 @@ const props = defineProps({
                 </Link>
             </div>
             <div class="flex gap-5">
-                <!-- Links condicionais dependendo do estado de autenticação -->
-                <Link v-if="$page.props.auth.user" :href="route('dashboard')" class="hover:text-[#8789FE]">Dashboard
+                <Link v-if="$page.props.auth.user" :href="route('dashboard')" class="hover:text-[#8789FE]">
+                    Dashboard
                 </Link>
                 <template v-else>
-                    <Link :href="route('login')" class="hover:text-[#8789FE]">Entrar</Link>
-                    <Link v-if="canRegister" :href="route('register')" class="hover:text-[#8789FE]">Registrar</Link>
+                    <Link :href="route('login')" class="hover:text-[#8789FE]">
+                        Entrar
+                    </Link>
+                    <Link v-if="canRegister" :href="route('register')" class="hover:text-[#8789FE]">
+                        Registrar
+                    </Link>
                 </template>
             </div>
         </div>
     </nav>
-
-    <!-- Conteúdo principal -->
     <main class="flex-1">
         <div class="max-w-screen-xl m-auto">
             <div class="flex flex-col items-center justify-center h-[calc(100vh-135px)]">
@@ -47,11 +45,12 @@ const props = defineProps({
             </div>
         </div>
     </main>
-    <!-- Rodapé -->
     <footer class="border shadow-sm p-5 bg-white">
         <div class="max-w-screen-xl m-auto">
             <h1>Copyright (C) 2024
-                <Link href="https://github.com/Fernand0cruz" className="font-bold">Fernand0W</Link>
+                <Link href="https://github.com/Fernand0cruz" className="font-bold">
+                    Fernand0W
+                </Link>
             </h1>
         </div>
     </footer>

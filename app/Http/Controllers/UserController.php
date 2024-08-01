@@ -12,124 +12,165 @@ use Illuminate\Auth\Events\Registered;
 
 class UserController extends Controller
 {
+    /**
+     * Exibe a lista de usuários.
+     *
+     * @return \Inertia\Response
+     */
     public function index()
     {
-        // Carrega o usuário autenticado e sua empresa associada, se houver
-        $user = auth()->user();
-        $users = [];
-        $departments = [];
+        // Obtém os usuários da empresa do usuário autenticado, se existir
+        $users = $this->getUsersForCompany(auth()->user()->company->id);
 
-        if ($user && $user->company) {
-            // Busca todos os usuários da empresa do usuário autenticado e carrega o departamento associado
-            $users = User::where('company_id', $user->company->id)
-                ->with('department') // Carrega a relação com o departamento
-                ->get()
-                ->map(function ($user) {
-                    // Adiciona o nome do departamento ao usuário
-                    $user->department_name = $user->department ? $user->department->name : 'N/A';
-                    return $user;
-                });
+        // Obtém os departamentos ativos da empresa do usuário autenticado, se existir
+        $departments = $this->getActiveDepartmentsForCompany(auth()->user()->company->id);
 
-            // Busca todos os departamentos ativos da empresa do usuário autenticado
-            $departments = Department::where('company_id', $user->company->id)
-                ->where('status', 'active') // Filtra departamentos ativos
-                ->get();
-        }
-
-        // Renderiza a view passando os usuários, departamentos e o usuário autenticado
-        return Inertia::render('Dashboard/Users', [
-            'user' => $user,
-            'users' => $users,
-            'departments' => $departments
-        ]);
+        // Renderiza a página de usuários com Inertia, passando os usuários e os departamentos
+        return Inertia::render('Dashboard/Users', compact('users', 'departments'));
     }
 
+    /**
+     * Método privado para obter os usuários de uma empresa específica.
+     *
+     * @param int $companyId
+     * @return \Illuminate\Support\Collection
+     */
+    private function getUsersForCompany($companyId)
+    {
+        return User::where('company_id', $companyId)
+            ->with('department') // Carrega o relacionamento com 'department'
+            ->get()
+            ->map(function ($user) {
+                // Adiciona o nome do departamento ao usuário, se existir
+                $user->department_name = optional($user->department)->name ?? 'N/A';
+                return $user;
+            });
+    }
+
+    /**
+     * Método privado para obter os departamentos ativos de uma empresa específica.
+     *
+     * @param int $companyId
+     * @return \Illuminate\Support\Collection
+     */
+    private function getActiveDepartmentsForCompany($companyId)
+    {
+        return Department::where('company_id', $companyId)
+            ->where('status', 'active') // Filtra pelos departamentos com status 'active'
+            ->get();
+    }
+
+    /**
+     * Cria um novo usuário.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
-        // Valida os dados do formulário
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'phone' => ['required', 'string', 'max:255'],
-            'status' => ['required', 'string', 'in:active,inactive'],
-            'role' => ['required', 'string', 'max:255'],
-            'department_id' => ['required', 'integer', 'exists:departments,id'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ] , [
-            'email.unique' => 'Email já cadastrado nessa empresa.'
-        ]);
+        // Valida os dados da requisição usando as regras de validação definidas
+        $request->validate($this->getValidationRules());
 
-        // Obtém o company_id do usuário autenticado
-        $companyId = auth()->user()->company_id;
-        
-        // Cria um novo usuário
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'status' => $request->status,
-            'role' => $request->role,
-            'company_id' => $companyId, // Define o company_id do usuário autenticado
-            'department_id' => $request->department_id,
-            'password' => Hash::make($request->password),
-        ]);
+        // Cria um novo usuário com os dados validados
+        $user = User::create($this->getUserData($request, auth()->user()->company_id));
 
-        // Disparar o evento Registered
+        // Dispara o evento de registro de usuário
         event(new Registered($user));
 
-        // Redireciona para a página de usuários ou retorna a página com sucesso
-        return redirect()->route('users.index')->with('success', 'User created successfully.');
+        // Redireciona para a lista de usuários com uma mensagem de sucesso
+        return redirect()->route('users.index')->with('success', 'Usuário criado com sucesso.');
     }
 
+    /**
+     * Define as regras de validação.
+     *
+     * @return array
+     */
+    private function getValidationRules()
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'], // Nome é obrigatório, deve ser uma string e máximo de 255 caracteres
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'], // Email é obrigatório, deve ser uma string, um email válido, máximo de 255 caracteres e único
+            'phone' => ['required', 'string', 'max:255'], // Telefone é obrigatório, deve ser uma string e máximo de 255 caracteres
+            'status' => ['required', 'string', 'in:active,inactive'], // Status é obrigatório e deve ser 'active' ou 'inactive'
+            'role' => ['required', 'string', 'max:255'], // Papel (role) é obrigatório, deve ser uma string e máximo de 255 caracteres
+            'department_id' => ['required', 'integer', 'exists:departments,id'], // ID do departamento é obrigatório, deve ser um inteiro e existir na tabela de departamentos
+            'password' => ['required', 'confirmed', Rules\Password::defaults()], // Senha é obrigatória, deve ser confirmada e seguir as regras padrão de senha
+        ];
+    }
+
+    /**
+     * Obtém os dados do usuário a partir da requisição.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $companyId
+     * @return array
+     */
+    private function getUserData(Request $request, $companyId)
+    {
+        $userData = [
+            'name' => $request->name, // Nome do usuário
+            'email' => $request->email, // Email do usuário
+            'phone' => $request->phone, // Telefone do usuário
+            'status' => $request->status, // Status do usuário
+            'role' => $request->role, // Papel do usuário
+            'company_id' => $companyId, // ID da empresa do usuário autenticado
+            'department_id' => $request->department_id, // ID do departamento do usuário
+        ];
+
+        // Se a senha estiver preenchida, adiciona ao array de dados do usuário
+        if ($request->filled('password')) {
+            $userData['password'] = Hash::make($request->password);
+        }
+
+        return $userData;
+    }
+
+    /**
+     * Deleta um usuário.
+     *
+     * @param \App\Models\User $user
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy(User $user)
     {
-        $user = User::findOrFail($user->id);
-
+        // Deleta o usuário fornecido
         $user->delete();
 
-        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+        // Redireciona para a lista de usuários com uma mensagem de sucesso
+        return redirect()->route('users.index')->with('success', 'Usuário deletado com sucesso.');
     }
 
+    /**
+     * Atualiza um usuário.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\User $user
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Request $request, User $user)
-{
-    // Validação condicional para a senha
-    $rules = [
-        'name' => ['required', 'string', 'max:255'],
-        'email' => ['required', 'string', 'email', 'max:255'],
-        'phone' => ['required', 'string', 'max:255'],
-        'department_id' => ['required', 'exists:departments,id'],
-        'status' => ['required', 'in:active,inactive'],
-        'role' => ['required', 'in:user,admin'],
-    ];
+    {
+        // Obtém as regras de validação
+        $rules = $this->getValidationRules();
 
-    // Adiciona a validação de senha se o campo estiver presente
-    if ($request->filled('password')) {
-        $rules['password'] = ['required', 'confirmed', Rules\Password::defaults()];
+        // Adiciona uma regra personalizada para o campo 'email' ignorando o ID do usuário atual
+        $rules['email'] = ['required', 'string', 'email', 'max:255', \Illuminate\Validation\Rule::unique('users', 'email')->ignore($user->id),];
+
+        // Se a senha estiver preenchida, adiciona a regra de validação para a senha
+        if ($request->filled('password')) {
+            $rules['password'] = ['required', 'confirmed', Rules\Password::defaults()];
+        } else {
+            // Se a senha não estiver preenchida, remove a regra de validação para a senha
+            unset($rules['password']);
+        }
+
+        // Valida os dados da requisição usando as regras de validação
+        $request->validate($rules);
+
+        // Atualiza o usuário com os dados validados
+        $user->update($this->getUserData($request, auth()->user()->company_id));
+
+        // Redireciona para a mesma página com uma mensagem de sucesso
+        return back()->with('success', 'Usuário atualizado com sucesso.');
     }
-
-    $request->validate($rules);
-
-    $companyId = auth()->user()->company_id;
-
-    // Atualiza os dados do usuário
-    $userData = [
-        'name' => $request->name,
-        'email' => $request->email,
-        'phone' => $request->phone,
-        'department_id' => $request->department_id,
-        'company_id' => $companyId,
-        'status' => $request->status,
-        'role' => $request->role,
-    ];
-
-    // Atualiza a senha somente se fornecida
-    if ($request->filled('password')) {
-        $userData['password'] = Hash::make($request->password);
-    }
-
-    $user->update($userData);
-
-    return back()->with('success', 'Usuário atualizado com sucesso');
-}
-
 }

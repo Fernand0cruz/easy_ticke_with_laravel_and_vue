@@ -110,16 +110,11 @@ const leave = (el, done) => {
                         <MailQuestion />Suporte Easy Ticket
                         </Link>
                     </li>
-
-
-
-
-                    <Link :href="route('logout')" method="post">
-                    Sair
-                    </Link>
-
-
-
+                    <li>
+                        <Link :href="route('logout')" method="post" as="button" class="py-2 flex gap-2 items-center">
+                            Sair
+                        </Link>
+                    </li>
                 </ul>
             </div>
         </transition>

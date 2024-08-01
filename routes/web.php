@@ -37,10 +37,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Routes for Tickets
         Route::get('/createticket', [TicketController::class, 'index'])->name('createTicket.index');
         Route::post('/createticket', [TicketController::class, 'store'])->name('createTicket.store');
-        Route::get('/alltickets', [TicketController::class, 'showAll'])->name('allTickets.show');
         Route::get('/tickets', [TicketController::class, 'showByDepartment'])->name('tickets.show');
-        Route::get('/mytickets', [TicketController::class, 'showOpendByMe'])->name('myTickets.show');
+        Route::get('/alltickets', [TicketController::class, 'showAll'])->name('allTickets.show');
+        Route::get('/mytickets', [TicketController::class, 'showOpenedByMe'])->name('myTickets.show');
         Route::get('/ticket/{id}', [TicketController::class, 'showTicket'])->name('ticket.show');
+        Route::patch('/ticket/{id}/assign', [TicketController::class, 'assignToUser'])->name('ticket.assign');
+        Route::post('/ticket/{id}/response', [TicketController::class, 'storeResponse'])->name('ticket.response');
     });
 });
 
