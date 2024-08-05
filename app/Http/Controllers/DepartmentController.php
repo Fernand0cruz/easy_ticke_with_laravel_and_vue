@@ -95,7 +95,7 @@ class DepartmentController extends Controller
     {
         // Deleta o departamento fornecido
         if ($department->users()->count() > 0) {
-            return back()->with('error', 'Departamento possui usáarios vinculados.');
+            return back()->with('error', 'Departamento possui usuários vinculados.');
         }
         $department->delete();
 

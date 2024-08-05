@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use App\Models\Department;
 use App\Models\User;
+use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -78,7 +79,7 @@ class UserController extends Controller
         event(new Registered($user));
 
         // Redireciona para a lista de usuários com uma mensagem de sucesso
-        return redirect()->route('users.index')->with('success', 'Usuário criado com sucesso.');
+        return back()->with('success', 'Usuário criado com sucesso.');
     }
 
     /**
@@ -134,11 +135,20 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        // Obtém os tickets do usuário específico onde o usuário é o criador ou o usuário a quem o ticket está atribuído
+        $tickets = Ticket::where('user_id', $user->id)
+            ->orWhere('assigned_to_user_id', $user->id)
+            ->get();
+            
+        // Só pode deletar um usuário se ele não estiver vinculado a nenhum chamado
+        if($tickets->count() > 0){
+            return back()->with('error', 'Usuário está vinculado a algum chamado.');
+        }
         // Deleta o usuário fornecido
         $user->delete();
 
         // Redireciona para a lista de usuários com uma mensagem de sucesso
-        return redirect()->route('users.index')->with('success', 'Usuário deletado com sucesso.');
+        return back()->with('success', 'Usuário deletado com sucesso.');
     }
 
     /**
@@ -162,6 +172,16 @@ class UserController extends Controller
         } else {
             // Se a senha não estiver preenchida, remove a regra de validação para a senha
             unset($rules['password']);
+        }
+
+        // Obtém os tickets do usuário específico onde o usuário é o criador ou o usuário a quem o ticket está atribuído
+        $tickets = Ticket::where('user_id', $user->id)
+            ->orWhere('assigned_to_user_id', $user->id)
+            ->get();
+
+        //so pode mudar status do user para inativo se o user não estvier vinculado a nenhum chamado
+        if ($request->input('status') === 'inactive' && $tickets->count() > 0) {
+            return back()->with('error', 'Usuário possui chamados vinculados.');
         }
 
         // Valida os dados da requisição usando as regras de validação
