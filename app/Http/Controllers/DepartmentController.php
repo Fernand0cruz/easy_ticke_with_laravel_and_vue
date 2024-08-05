@@ -37,7 +37,7 @@ class DepartmentController extends Controller
         Department::create($this->getDepartmentData($request, auth()->user()->company_id));
 
         // Redireciona para a lista de departamentos com uma mensagem de sucesso
-        return redirect()->route('departments.index')->with('success', 'Departamento criado com sucesso.');
+        return back()->with('success', 'Departamento criado com sucesso.');
     }
 
     /**
@@ -94,10 +94,13 @@ class DepartmentController extends Controller
     public function destroy(Department $department)
     {
         // Deleta o departamento fornecido
+        if ($department->users()->count() > 0) {
+            return back()->with('error', 'Departamento possui usáarios vinculados.');
+        }
         $department->delete();
 
         // Redireciona para a lista de departamentos com uma mensagem de sucesso
-        return redirect()->route('departments.index')->with('success', 'Departamento deletado com sucesso.');
+        return back()->with('success', 'Departamento deletado com sucesso.');
     }
 
     /**
@@ -117,6 +120,12 @@ class DepartmentController extends Controller
 
         // Valida os dados da requisição usando as regras de validação
         $request->validate($rules);
+
+        // Verifica se o status está sendo mudado para 'inactive'
+        if ($request->input('status') === 'inactive' && $department->users()->count() > 0) {
+            // Se houver usuários vinculados, retorna uma mensagem de erro
+            return back()->with('error', 'Não é possível inativar o departamento porque existem usuários vinculados a ele.');
+        }
 
         // Atualiza o departamento com os dados validados
         $department->update($this->getDepartmentData($request, auth()->user()->company_id));
