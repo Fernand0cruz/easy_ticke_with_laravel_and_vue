@@ -223,7 +223,7 @@ const formatPhone = () => {
 
 <style>
 .Vue-Toastification__toast--success {
-    background-color: #5d5fb0;
+    background-color: #8789FE;
 }
 .Vue-Toastification__toast--error {
     background-color: #dc2626;
