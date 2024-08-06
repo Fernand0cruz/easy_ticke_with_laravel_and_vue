@@ -27,7 +27,14 @@ class UserController extends Controller
         $departments = $this->getActiveDepartmentsForCompany(auth()->user()->company->id);
 
         // Renderiza a página de usuários com Inertia, passando os usuários e os departamentos
-        return Inertia::render('Dashboard/Users', compact('users', 'departments'));
+        return Inertia::render('Dashboard/Users', [
+            'users' => $users,
+            'departments' => $departments,
+            'flash' => [
+                'success' => session()->get('success'),
+                'error' => session()->get('error')
+            ],
+        ]);
     }
 
     /**
@@ -139,10 +146,14 @@ class UserController extends Controller
         $tickets = Ticket::where('user_id', $user->id)
             ->orWhere('assigned_to_user_id', $user->id)
             ->get();
-            
+
         // Só pode deletar um usuário se ele não estiver vinculado a nenhum chamado
-        if($tickets->count() > 0){
+        if ($tickets->count() > 0) {
             return back()->with('error', 'Usuário está vinculado a algum chamado.');
+        }
+        // Se user for admin ele não pode excluir a conta ou ser excluido
+        if ($user->role === 'admin'){
+            return back()->with('error', 'Usuário admin não pode ser excluido.');
         }
         // Deleta o usuário fornecido
         $user->delete();
@@ -179,9 +190,13 @@ class UserController extends Controller
             ->orWhere('assigned_to_user_id', $user->id)
             ->get();
 
-        //so pode mudar status do user para inativo se o user não estvier vinculado a nenhum chamado
+        //so pode mudar status do user para inativo se o user não estivier vinculado a nenhum chamado
         if ($request->input('status') === 'inactive' && $tickets->count() > 0) {
             return back()->with('error', 'Usuário possui chamados vinculados.');
+        }
+
+        if ($request->input('status') === 'inactive' && $user->role === 'admin') {
+            return back()->with('error', 'Usuário admin não pode ser inativado.');
         }
 
         // Valida os dados da requisição usando as regras de validação

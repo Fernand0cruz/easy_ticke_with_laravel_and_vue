@@ -6,13 +6,15 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { ClipboardPlus, Trash2, Pencil } from 'lucide-vue-next';
+import { useToast } from 'vue-toastification';
 
 // Define as props recebidas do servidor
 const props = defineProps({
     users: Array, // Array de usuários a serem exibidos
-    departments: Array // Array de departamentos disponíveis
+    departments: Array, // Array de departamentos disponíveis
+    flash: Object
 });
 
 // Inicializa o formulário com campos padrão
@@ -42,22 +44,34 @@ const startEditUser = (user) => {
     isEditing.value = true; // Atualiza o estado para edição
 }
 
+// Inicializa o toast
+const toast = useToast();
+
+watch(() => props.flash, (newFlash) => {
+    if (newFlash) {
+        if (newFlash.success) {
+            toast.success(newFlash.success); // Exibe a mensagem de sucesso
+        }
+        if (newFlash.error) {
+            toast.error(newFlash.error); // Exibe a mensagem de erro
+        }
+    }
+});
+
 // Envia o formulário para criar ou atualizar um usuário
 const submit = () => {
     if (isEditing.value) {
         form.patch(route('users.update', editUserId.value), {
-            onFinish: () => {
-                if (Object.keys(form.errors).length === 0) {
-                    window.location.reload(); // Recarrega a página se não houver erros
-                }
+            onSuccess: () => {
+                isEditing.value = false; // Retorna ao modo de criação de usuário
+                editUserId.value = null; // Reseta o ID do usuário sendo editado
+                form.reset(); // Reseta o formulário
             },
         });
     } else {
         form.post(route('users.store'), {
-            onFinish: () => {
-                if (Object.keys(form.errors).length === 0) {
-                    window.location.reload(); // Recarrega a página se não houver erros
-                }
+            onSuccess: () => {
+                form.reset(); // Reseta o formulário
             },
         });
     }
@@ -159,7 +173,7 @@ const formatPhone = () => {
                         <InputError class="mt-2" :message="form.errors.password_confirmation" />
                     </div>
                     <div class="flex items-center justify-end mt-4">
-                        <PrimaryButton class="ms-4 flex gap-2" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                        <PrimaryButton class="ms-4 flex gap-2" :disabled="form.processing">
                             <ClipboardPlus />
                             {{ isEditing ? 'Atualizar Usuário' : 'Cadastrar Usuário' }}
                         </PrimaryButton>
@@ -206,3 +220,12 @@ const formatPhone = () => {
         </div>
     </AuthenticatedLayout>
 </template>
+
+<style>
+.Vue-Toastification__toast--success {
+    background-color: #5d5fb0;
+}
+.Vue-Toastification__toast--error {
+    background-color: #dc2626;
+}
+</style>
