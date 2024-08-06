@@ -19,7 +19,14 @@ class DepartmentController extends Controller
         $departments = auth()->user()->company->departments;
 
         // Renderiza a página de departamentos com Inertia, passando os departamentos
-        return Inertia::render('Dashboard/Departments', compact('departments'));
+        // return Inertia::render('Dashboard/Departments', compact('departments'));
+        return Inertia::render('Dashboard/Departments', [
+            'departments' => $departments,
+            'flash' => [
+                'success' => session()->get('success'),
+                'error' => session()->get('error')
+            ],
+        ]);
     }
 
     /**

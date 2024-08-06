@@ -7,11 +7,13 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Trash2, Pencil, ClipboardPlus } from 'lucide-vue-next';
 import { Head, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+import { useToast } from 'vue-toastification';
 
 // Recebe as props do servidor
 const props = defineProps({
-    departments: Array // Array de departamentos
+    departments: Array, // Array de departamentos
+    flash: Object
 });
 
 // Inicializa o formulário usando useForm do Inertia
@@ -41,25 +43,36 @@ const startEditDepartment = (department) => {
     isEditing.value = true; // Define que estamos em modo de edição
 };
 
+const toast = useToast();
+
+watch(() => props.flash, (newFlash) => {
+    if(newFlash) {
+        if (newFlash.success) {
+            toast.success(newFlash.success); // Exibe a mensagem de sucesso
+        }
+        if (newFlash.error) {
+            toast.error(newFlash.error); // Exibe a mensagem de erro
+        }
+    }
+})
+
 // Função para submeter o formulário
 const submit = () => {
     // Verifica se estamos editando ou criando um departamento
     if (isEditing.value) {
         // Atualiza o departamento
         form.patch(route('departments.update', editDepartmentId.value), {
-            onFinish: () => {
-                if (Object.keys(form.errors).length === 0) { // Se não houver erros
-                    window.location.reload(); // Recarrega a página
-                }
+            onSuccess: () => {
+                isEditing.value = false; // Retorna ao modo de criação de usuário
+                editDepartmentId.value = null; // Reseta o ID do usuário sendo editado
+                form.reset(); // Reseta o formulário
             },
         });
     } else {
         // Cria um novo departamento
         form.post(route('departments.store'), {
-            onFinish: () => {
-                if (Object.keys(form.errors).length === 0) { // Se não houver erros
-                    window.location.reload(); // Recarrega a página
-                }
+            onSuccess: () => {
+                form.reset(); // Reseta o formulário
             },
         });
     }
@@ -134,7 +147,7 @@ const formatPhone = () => {
                         <InputError class="mt-2" :message="form.errors.status" />
                     </div>
                     <div class="flex items-center justify-end mt-4">
-                        <PrimaryButton class="ms-4 flex gap-2" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                        <PrimaryButton class="ms-4 flex gap-2" :disabled="form.processing">
                             <ClipboardPlus />
                             {{ isEditing ? 'Atualizar Departamento' : 'Cadastrar Departamento' }}
                         </PrimaryButton>
@@ -179,3 +192,12 @@ const formatPhone = () => {
         </div>
     </AuthenticatedLayout>
 </template>
+
+<style>
+.Vue-Toastification__toast--success {
+    background-color: #8789FE;
+}
+.Vue-Toastification__toast--error {
+    background-color: #dc2626;
+}
+</style>
