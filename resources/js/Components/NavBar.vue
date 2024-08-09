@@ -76,23 +76,33 @@ const leave = (el, done) => {
                         </Link>
                     </li>
                     <li>
-                        <Link :href="route('allTickets.show')" class="py-2 flex gap-2 items-center">
-                        <Ticket />Todos os chamados
-                        </Link>
-                    </li>
-                    <li>
                         <Link :href="route('createTicket.index')" class="py-2 flex gap-2 items-center">
                         <Ticket />Criar Chamado
                         </Link>
                     </li>
                     <li>
-                        <Link :href="route('tickets.show')" class="py-2 flex gap-2 items-center">
-                        <Ticket />Chamados
+                        <Link :href="route('allTickets.show')" class="py-2 flex gap-2 items-center">
+                        <Ticket />Todos os chamados
                         </Link>
                     </li>
                     <li>
-                        <Link :href="route('myTickets.show')" class="py-2 flex gap-2 items-center">
-                        <TicketCheck />Meus Chamados
+                        <Link :href="route('forMyDepartment.show')" class="py-2 flex gap-2 items-center">
+                        <Ticket />Para meu departamento
+                        </Link>
+                    </li>
+                    <li>
+                        <Link :href="route('withMe.show')" class="py-2 flex gap-2 items-center">
+                        <Ticket />Comigo
+                        </Link>
+                    </li>
+                    <li>
+                        <Link :href="route('createdByMyDepartment.show')" class="py-2 flex gap-2 items-center">
+                        <TicketCheck />Do meu departamento
+                        </Link>
+                    </li>
+                    <li>
+                        <Link :href="route('createdByMe.show')" class="py-2 flex gap-2 items-center">
+                        <TicketCheck />Criado por mim
                         </Link>
                     </li>
                     <li>
